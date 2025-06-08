@@ -1,0 +1,42 @@
+import random
+import telebot
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+TELEGRAM_TOKEN = '7570128725:AAGOiRZXj1nmPmjp3DqzEB6gFptgNGkuD9A'
+
+bot = telebot.TeleBot(TELEGRAM_TOKEN)
+
+@bot.message_handler(commands=['info'])
+def info(message):
+    bot.reply_to(message, "available commands: \n"
+    "/hello \n" 
+    "/bye \n") 
+
+@bot.message_handler(commands=['hello'])
+def hello(message):
+    random_hello = random.choice(["hi!", "hello!", "salut!"])
+    bot.reply_to(message, random_hello)
+
+@bot.message_handler(commands=['bye'])
+def send_bye(message):
+    bot.reply_to(message, "Пока! Удачи!")
+
+def gen_markup():
+    markup = InlineKeyboardMarkup()
+    markup.row_width = 2
+    markup.add(InlineKeyboardButton("Jordan", callback_data="cb_yes"),
+                               InlineKeyboardButton("Michael", callback_data="cb_no"))
+    return markup
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback_query(call):
+    if call.data == "cb_yes":
+        bot.answer_callback_query(call.id, "Answer is Yes")
+    elif call.data == "cb_no":
+        bot.answer_callback_query(call.id, "Answer is No")
+
+@bot.message_handler(func=lambda message: True)
+def message_handler(message):
+    bot.send_message(message.chat.id, "What is Michael Jordan's last name?", reply_markup=gen_markup())
+
+bot.infinity_polling()
